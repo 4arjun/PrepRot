@@ -4,7 +4,6 @@
 
 ---
 
-![InterviewPrep Logo](https://via.placeholder.com/150) 
 ## Table of Contents
 - [Features](#features)
 - [Tech Stack](#tech-stack)
