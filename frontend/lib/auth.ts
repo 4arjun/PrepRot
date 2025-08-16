@@ -31,22 +31,23 @@ export const refreshAccessToken = async () => {
     }
 };
 
-
-export const getAuthAxios = async () => {
-  let access = localStorage.getItem("access");
-
+export const isAuthenticated = async (): Promise<boolean> => {
   try {
-    await axios.get(`${API_URL}/token/verify/`, {
-      headers: { Authorization: `Bearer ${access}` },
-    });
+    const access = localStorage.getItem("access");
+    if (!access) return false;
+
+    await axios.post(`${API_URL}/token/verify/`, {token: access});
+    return true;
   } catch (err: any) {
     if (err.response?.status === 401) {
-      access = await refreshAccessToken();
+      const newAccess = await refreshAccessToken();
+      return newAccess !== null;
     }
+    return false;
   }
+};
 
-  return axios.create({
-    baseURL: API_URL,
-    headers: { Authorization: `Bearer ${access}` },
-  });
+export const logout = () => {
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
 };

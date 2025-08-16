@@ -1,0 +1,37 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { logout } from "../../../lib/auth";
+import axios from "axios";
+
+export default function LogoutPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const performLogout = async () => {
+      try {
+        const refresh = localStorage.getItem("refresh");
+
+        // Optional: blacklist refresh token in backend
+        if (refresh) {
+          await axios.post("http://localhost:8000/api/token/logout/", { refresh });
+        }
+      } catch (err) {
+        console.error("Failed to blacklist token", err);
+      } finally {
+        // Use centralized logout function
+        logout();
+        router.push("/login");
+      }
+    };
+
+    performLogout();
+  }, [router]);
+
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <p className="text-lg">Logging out...</p>
+    </div>
+  );
+}

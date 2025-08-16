@@ -12,7 +12,7 @@ export default function LoginPage() {
     e.preventDefault();
     const success = await login(username, password);
     if (success) {
-      window.location.href = "/";
+      window.location.href = "/home";
     } else {
       setError("Invalid username or password");
     }
