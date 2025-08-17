@@ -43,7 +43,7 @@ export default function Home() {
   }
 
   if (!isAuth) {
-    return null; // Will redirect to login
+    return null; 
   }
 
   return (

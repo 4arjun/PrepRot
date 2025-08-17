@@ -1,12 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { login } from "../../../lib/auth";
+import { isAuthenticated } from "../../../lib/auth";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const authenticated = await isAuthenticated();
+        if (authenticated) {
+          router.push("/home");
+          return;
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,11 +37,10 @@ export default function LoginPage() {
     }
   };
 
-  // Redirect to Google OAuth
   const handleGoogleLogin = () => {
     const params = new URLSearchParams({
-      client_id: "353607862709-5fhsk22m35ucilkd915jpo1rnl1lq3u9.apps.googleusercontent.com", // must be set in .env.local
-      redirect_uri: "http://localhost:3000/auth/callback", // must match Google Console + backend settings
+      client_id: "353607862709-5fhsk22m35ucilkd915jpo1rnl1lq3u9.apps.googleusercontent.com", 
+      redirect_uri: "http://localhost:3000/auth/callback", 
       response_type: "code",
       scope: "openid email profile",
       access_type: "offline",
@@ -42,7 +60,6 @@ export default function LoginPage() {
 
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-        {/* Username / Password */}
         <input
           className="w-full p-2 border rounded-lg"
           type="text"
@@ -66,14 +83,12 @@ export default function LoginPage() {
           Login
         </button>
 
-        {/* Divider */}
         <div className="flex items-center">
           <hr className="flex-grow border-gray-300" />
           <span className="px-2 text-gray-500 text-sm">or</span>
           <hr className="flex-grow border-gray-300" />
         </div>
 
-        {/* Google Login */}
         <div className="flex justify-center">
           <button
             type="button"
@@ -82,6 +97,19 @@ export default function LoginPage() {
           >
             Continue with Google
           </button>
+        </div>
+
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{" "}
+            <button
+              type="button"
+              onClick={() => router.push("/signup")}
+              className="text-blue-600 hover:text-blue-700 underline"
+            >
+              Sign up
+            </button>
+          </p>
         </div>
       </form>
     </div>

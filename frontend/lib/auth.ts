@@ -16,6 +16,24 @@ export const login = async (username: string, password: string) => {
   }
 };
 
+export const signup = async (username: string, email: string, password: string) => {
+  try {
+    const res = await axios.post(`${API_URL}/signup/`, {
+      username,
+      email,
+      password,
+    });
+    return { success: true, message: res.data.message };
+  } catch (err: any) {
+    console.error("Signup failed", err);
+    return { 
+      success: false, 
+      message: err.response?.data?.message || "Signup failed",
+      errors: err.response?.data || {}
+    };
+  }
+};
+
 
 export const refreshAccessToken = async () => {
     try {

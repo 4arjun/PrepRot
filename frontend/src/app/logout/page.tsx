@@ -13,14 +13,12 @@ export default function LogoutPage() {
       try {
         const refresh = localStorage.getItem("refresh");
 
-        // Optional: blacklist refresh token in backend
         if (refresh) {
           await axios.post("http://localhost:8000/api/token/logout/", { refresh });
         }
       } catch (err) {
         console.error("Failed to blacklist token", err);
       } finally {
-        // Use centralized logout function
         logout();
         router.push("/login");
       }
