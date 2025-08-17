@@ -39,15 +39,16 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     const params = new URLSearchParams({
-      client_id: "353607862709-5fhsk22m35ucilkd915jpo1rnl1lq3u9.apps.googleusercontent.com", 
-      redirect_uri: "http://localhost:3000/auth/callback", 
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "", 
+      redirect_uri: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI || "http://localhost:3000/auth/callback", 
       response_type: "code",
       scope: "openid email profile",
       access_type: "offline",
       prompt: "consent",
     });
 
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    const authUrl = process.env.NEXT_PUBLIC_GOOGLE_AUTH_URL || "https://accounts.google.com/o/oauth2/v2/auth";
+    window.location.href = `${authUrl}?${params.toString()}`;
   };
 
   return (

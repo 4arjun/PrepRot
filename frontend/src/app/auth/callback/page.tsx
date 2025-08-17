@@ -17,7 +17,8 @@ export default function GoogleCallback() {
 
     const sendCodeToBackend = async () => {
       try {
-        const res = await axios.post("http://localhost:8000/api/auth/google/", {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+        const res = await axios.post(`${apiUrl}/auth/google/`, {
           code,
         });
 

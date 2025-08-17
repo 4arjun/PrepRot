@@ -14,7 +14,8 @@ export default function LogoutPage() {
         const refresh = localStorage.getItem("refresh");
 
         if (refresh) {
-          await axios.post("http://localhost:8000/api/token/logout/", { refresh });
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+          await axios.post(`${apiUrl}/token/logout/`, { refresh });
         }
       } catch (err) {
         console.error("Failed to blacklist token", err);
