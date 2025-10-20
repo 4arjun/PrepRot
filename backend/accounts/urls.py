@@ -1,5 +1,8 @@
 from django.urls import path
-from .views import RegisterView, changeUsername, changePassword, GoogleAuthCallbackView
+from .views import (
+    RegisterView, changeUsername, changePassword, GoogleAuthCallbackView,
+    get_user_profile, update_leetcode_username
+)
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -16,4 +19,6 @@ urlpatterns = [
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('token/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
     path("auth/google/", GoogleAuthCallbackView.as_view()),
+    path('user/profile/', get_user_profile, name='user_profile'),
+    path('user/update-leetcode/', update_leetcode_username, name='update_leetcode'),
 ]

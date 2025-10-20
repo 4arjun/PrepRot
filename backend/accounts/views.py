@@ -142,3 +142,134 @@ class GoogleAuthCallbackView(APIView):
             "created": created,
             "user": {"id": user.id, "username": user.username, "email": user.email}
         })
+
+
+def get_leetcode_stats(username):
+    """
+    Fetch LeetCode stats using GraphQL API
+    Returns: dict with easy, medium, hard problem counts or None if error
+    """
+    url = "https://leetcode.com/graphql"
+    query = """
+    query userProfile($username: String!) {
+      matchedUser(username: $username) {
+        username
+        submitStats {
+          acSubmissionNum {
+            difficulty
+            count
+          }
+        }
+      }
+    }
+    """
+    
+    variables = {"username": username}
+    
+    try:
+        response = requests.post(url, json={"query": query, "variables": variables}, timeout=10)
+        
+        if response.status_code != 200:
+            return None
+            
+        data = response.json()
+        
+        # Check if user exists
+        if not data.get("data") or not data["data"].get("matchedUser"):
+            return None
+            
+        # Extract stats
+        stats = data["data"]["matchedUser"]["submitStats"]["acSubmissionNum"]
+        
+        # Convert to dict for easier access
+        result = {"Easy": 0, "Medium": 0, "Hard": 0}
+        for item in stats:
+            difficulty = item["difficulty"]
+            count = item["count"]
+            if difficulty in result:
+                result[difficulty] = count
+                
+        return result
+        
+    except Exception as e:
+        print(f"Error fetching LeetCode stats for {username}: {str(e)}")
+        return None
+
+def calculate_leetcode_score(easy, medium, hard):
+    """
+    Calculate weighted LeetCode score: Easy×1 + Medium×2 + Hard×3
+    """
+    return (easy * 1) + (medium * 2) + (hard * 3)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_profile(request):
+    """
+    Get current user's profile information
+    """
+    user = request.user
+    return Response({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'college': user.college,
+        'role': user.role,
+        'leetcode_username': user.leetcode_username,
+        'leetcode_score': user.leetcode_score
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_leetcode_username(request):
+    """
+    Update user's LeetCode username, college and fetch/calculate their score
+    """
+    leetcode_username = request.data.get('leetcode_username', '').strip()
+    college = request.data.get('college', '').strip()
+    
+    if not leetcode_username:
+        return Response(
+            {'error': 'LeetCode username is required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if not college:
+        return Response(
+            {'error': 'College name is required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Check if username is already taken by another user
+    if User.objects.filter(leetcode_username=leetcode_username).exclude(id=request.user.id).exists():
+        return Response(
+            {'error': 'This LeetCode username is already connected to another account'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Fetch LeetCode stats
+    stats = get_leetcode_stats(leetcode_username)
+    if not stats:
+        return Response(
+            {'error': 'Could not fetch stats for this LeetCode username. Please check if the username is correct.'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Calculate score
+    new_score = calculate_leetcode_score(stats["Easy"], stats["Medium"], stats["Hard"])
+    
+    # Update user
+    user = request.user
+    user.leetcode_username = leetcode_username
+    user.college = college
+    user.leetcode_score = new_score
+    user.save()
+    
+    return Response({
+        'message': 'Profile updated successfully',
+        'leetcode_username': leetcode_username,
+        'college': college,
+        'leetcode_score': new_score,
+        'stats': stats
+    })

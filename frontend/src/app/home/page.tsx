@@ -17,7 +17,8 @@ export default function Home() {
           router.push("/login");
           return;
         }
-        setIsAuth(true);
+        // Redirect to dashboard if authenticated
+        router.push("/dashboard");
       } catch (error) {
         console.error("Auth check failed:", error);
         router.push("/login");
