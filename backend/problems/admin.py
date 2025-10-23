@@ -8,6 +8,7 @@ class ProblemAdmin(admin.ModelAdmin):
     list_filter = ('difficulty', 'topic', 'source', 'created_at')
     search_fields = ('title', 'topic', 'company_tags')
     readonly_fields = ('created_at',)
+    fields = ('title', 'difficulty', 'topic', 'source', 'source_url', 'company_tags', 'created_at')
 
 
 @admin.register(SolvedProblem)

@@ -14,6 +14,7 @@ class Problem(models.Model):
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)
     topic = models.CharField(max_length=100)
     source = models.CharField(max_length=100)  # e.g., 'LeetCode', 'GeeksforGeeks'
+    source_url = models.URLField(blank=True)  # Link to the problem
     company_tags = models.TextField(blank=True)  # field for company tags
     created_at = models.DateTimeField(auto_now_add=True)
     

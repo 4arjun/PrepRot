@@ -86,7 +86,6 @@ export default function Leaderboard() {
     try {
       const token = localStorage.getItem("access");
       
-      // Save username, college and update score
       await axios.post(`${API_URL}/user/update-leetcode/`, {
         leetcode_username: leetcodeUsername,
         college: college
