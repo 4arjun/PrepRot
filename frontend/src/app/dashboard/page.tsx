@@ -8,7 +8,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ username: string } | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -122,7 +122,7 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back!</h2>
-          <p className="text-gray-600">Ready to level up your interview prep? Choose what you'd like to work on today.</p>
+          <p className="text-gray-600">Ready to level up your interview prep? Choose what you&apos;d like to work on today.</p>
         </div>
 
         {/* Quick Stats */}

@@ -11,11 +11,24 @@ export default function Leaderboard() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{
+    id: number;
+    username: string;
+    email: string;
+    college: string;
+    leetcode_username: string;
+    leetcode_score: number;
+  } | null>(null);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [leetcodeUsername, setLeetcodeUsername] = useState("");
   const [college, setCollege] = useState("");
-  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [leaderboardData, setLeaderboardData] = useState<{
+    id: number;
+    username: string;
+    leetcode_username: string;
+    leetcode_score: number;
+    college: string;
+  }[]>([]);
   const [isUpdatingScore, setIsUpdatingScore] = useState(false);
 
   useEffect(() => {
@@ -241,7 +254,7 @@ export default function Leaderboard() {
               <div className="text-4xl mb-4">🎓</div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Complete Your Profile</h3>
               <p className="text-gray-600">
-                Add your college and LeetCode username to join your college's leaderboard!
+                Add your college and LeetCode username to join your college&apos;s leaderboard!
               </p>
             </div>
             

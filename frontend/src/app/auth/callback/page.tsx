@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 
-export default function GoogleCallback() {
+function GoogleCallbackContent() {
   const params = useSearchParams();
   const router = useRouter();
 
@@ -38,5 +38,17 @@ export default function GoogleCallback() {
     <div className="flex h-screen items-center justify-center">
       <p className="text-lg">Logging in with Google...</p>
     </div>
+  );
+}
+
+export default function GoogleCallback() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-lg">Loading...</p>
+      </div>
+    }>
+      <GoogleCallbackContent />
+    </Suspense>
   );
 }

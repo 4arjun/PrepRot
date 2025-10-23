@@ -7,18 +7,81 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
+interface User {
+  id: number;
+  username: string;
+  is_me: boolean;
+}
+
+interface Interview {
+  id: number;
+  interviewer: User;
+  interviewee: User;
+  scheduled_time: string;
+  duration_minutes: number;
+  interview_type: string;
+  status: string;
+  meeting_link: string;
+  notes: string;
+  score: number | null;
+  feedback: string;
+  technical_areas: string;
+  created_at: string;
+  role: 'interviewer' | 'interviewee';
+}
+
+interface Interviewer {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+}
+
+interface InterviewStats {
+  as_interviewee: {
+    total: number;
+    completed: number;
+    scheduled: number;
+    cancelled: number;
+  };
+  as_interviewer: {
+    total: number;
+    completed: number;
+    scheduled: number;
+    cancelled: number;
+  };
+  average_score: number;
+}
+
+interface ScheduleFormData {
+  interviewer_id: string;
+  scheduled_time: string;
+  duration_minutes: number;
+  interview_type: string;
+  notes: string;
+  technical_areas: string;
+  meeting_link: string;
+}
+
+interface FeedbackFormData {
+  status: string;
+  score: number;
+  feedback: string;
+  meeting_link: string;
+}
+
 export default function Interviews() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
-  const [interviews, setInterviews] = useState<any[]>([]);
-  const [interviewers, setInterviewers] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [interviewers, setInterviewers] = useState<Interviewer[]>([]);
+  const [stats, setStats] = useState<InterviewStats | null>(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [selectedInterview, setSelectedInterview] = useState<any>(null);
+  const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ScheduleFormData>({
     interviewer_id: '',
     scheduled_time: '',
     duration_minutes: 60,
@@ -27,7 +90,7 @@ export default function Interviews() {
     technical_areas: '',
     meeting_link: ''
   });
-  const [feedbackData, setFeedbackData] = useState({
+  const [feedbackData, setFeedbackData] = useState<FeedbackFormData>({
     status: 'completed',
     score: 5,
     feedback: '',
@@ -137,9 +200,10 @@ export default function Interviews() {
       await fetchInterviews();
       await fetchStats();
       alert(response.data.message);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { error?: string } } };
       console.error("Failed to schedule interview:", error);
-      alert(error.response?.data?.error || "Failed to schedule interview. Please try again.");
+      alert(axiosError.response?.data?.error || "Failed to schedule interview. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -160,9 +224,10 @@ export default function Interviews() {
       await fetchInterviews();
       await fetchStats();
       alert("Feedback submitted successfully");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { error?: string } } };
       console.error("Failed to submit feedback:", error);
-      alert(error.response?.data?.error || "Failed to submit feedback. Please try again.");
+      alert(axiosError.response?.data?.error || "Failed to submit feedback. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -180,13 +245,14 @@ export default function Interviews() {
       await fetchInterviews();
       await fetchStats();
       alert("Interview cancelled successfully");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { error?: string } } };
       console.error("Failed to cancel interview:", error);
-      alert(error.response?.data?.error || "Failed to cancel interview. Please try again.");
+      alert(axiosError.response?.data?.error || "Failed to cancel interview. Please try again.");
     }
   };
 
-  const openFeedbackModal = (interview: any) => {
+  const openFeedbackModal = (interview: Interview) => {
     setSelectedInterview(interview);
     setFeedbackData({
       status: interview.status || 'completed',

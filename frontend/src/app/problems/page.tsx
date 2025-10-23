@@ -1,48 +1,59 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { isAuthenticated } from "../../../lib/auth";
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
+interface Problem {
+  id: number;
+  title: string;
+  difficulty: string;
+  topic: string;
+  source: string;
+  source_url: string;
+  company_tags: string;
+  is_solved: boolean;
+  created_at: string;
+}
+
+interface ProblemStats {
+  solved: {
+    easy: number;
+    medium: number;
+    hard: number;
+    total: number;
+  };
+  total: {
+    easy: number;
+    medium: number;
+    hard: number;
+    total: number;
+  };
+}
+
+interface Filters {
+  difficulty: string;
+  topic: string;
+  search: string;
+}
+
 export default function Problems() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
-  const [problems, setProblems] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
-  const [filters, setFilters] = useState({
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [stats, setStats] = useState<ProblemStats | null>(null);
+  const [filters, setFilters] = useState<Filters>({
     difficulty: 'all',
     topic: 'all',
     search: ''
   });
   const [isUpdating, setIsUpdating] = useState(false);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const authenticated = await isAuthenticated();
-        if (!authenticated) {
-          router.push("/login");
-          return;
-        }
-        setIsAuth(true);
-        await fetchProblems();
-        await fetchStats();
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        router.push("/login");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  const fetchProblems = async () => {
+  const fetchProblems = useCallback(async () => {
     try {
       const token = localStorage.getItem("access");
       const params = new URLSearchParams();
@@ -58,9 +69,9 @@ export default function Problems() {
     } catch (error) {
       console.error("Failed to fetch problems:", error);
     }
-  };
+  }, [filters]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const token = localStorage.getItem("access");
       const response = await axios.get(`${API_URL}/problems/stats/`, {
@@ -70,7 +81,28 @@ export default function Problems() {
     } catch (error) {
       console.error("Failed to fetch stats:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const authenticated = await isAuthenticated();
+        if (!authenticated) {
+          router.push("/login");
+          return;
+        }
+        setIsAuth(true);
+        await Promise.all([fetchProblems(), fetchStats()]);
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        router.push("/login");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router, fetchProblems, fetchStats]);
 
   const handleMarkProblem = async (problemId: number, currentStatus: boolean) => {
     setIsUpdating(true);
@@ -103,7 +135,7 @@ export default function Problems() {
     }
   };
 
-  const handleFilterChange = (newFilters: any) => {
+  const handleFilterChange = (newFilters: Filters) => {
     setFilters(newFilters);
   };
 
@@ -111,7 +143,7 @@ export default function Problems() {
     if (isAuth) {
       fetchProblems();
     }
-  }, [filters, isAuth]);
+  }, [filters, isAuth, fetchProblems]);
 
   if (isLoading) {
     return (

@@ -7,14 +7,43 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
+interface ReferralProfile {
+  id: number;
+  preferred_company: string;
+  target_role: string;
+  why_refer_me: string;
+  experience_years: number;
+  key_skills: string;
+  achievements: string;
+  resume_link: string;
+  linkedin_profile: string;
+  github_profile: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface FormData {
+  preferred_company: string;
+  target_role: string;
+  why_refer_me: string;
+  experience_years: number;
+  key_skills: string;
+  achievements: string;
+  resume_link: string;
+  linkedin_profile: string;
+  github_profile: string;
+  status: string;
+}
+
 export default function Referrals() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<ReferralProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     preferred_company: '',
     target_role: '',
     why_refer_me: '',
@@ -56,8 +85,9 @@ export default function Referrals() {
       });
       setProfile(response.data);
       setFormData(response.data);
-    } catch (error: any) {
-      if (error.response?.status !== 404) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number } };
+      if (axiosError.response?.status !== 404) {
         console.error("Failed to fetch referral profile:", error);
       }
       // 404 means no profile exists yet, which is fine
@@ -88,9 +118,10 @@ export default function Referrals() {
       setProfile(response.data.profile);
       setIsEditing(false);
       alert(response.data.message);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { error?: string } } };
       console.error("Failed to save referral profile:", error);
-      alert(error.response?.data?.error || "Failed to save profile. Please try again.");
+      alert(axiosError.response?.data?.error || "Failed to save profile. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -369,7 +400,7 @@ export default function Referrals() {
                   </button>
                 </div>
               </div>
-            ) : (
+            ) : profile ? (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -452,7 +483,7 @@ export default function Referrals() {
                   )}
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 

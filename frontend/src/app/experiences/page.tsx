@@ -1,26 +1,65 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { isAuthenticated } from "../../../lib/auth";
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
+interface Experience {
+  id: number;
+  company: string;
+  role: string;
+  date: string;
+  round_details: string;
+  overall_feedback: string;
+  experience_type: string;
+  outcome: string;
+  difficulty_rating: number;
+  preparation_time: number;
+  tips_and_advice: string;
+  is_anonymous: boolean;
+  author: string;
+  created_at: string;
+  is_own: boolean;
+}
+
+interface ExperienceFilters {
+  company: string;
+  role: string;
+  experience_type: string;
+  search: string;
+}
+
+interface ExperienceFormData {
+  company: string;
+  role: string;
+  date: string;
+  round_details: string;
+  overall_feedback: string;
+  experience_type: string;
+  outcome: string;
+  difficulty_rating: number;
+  preparation_time: number;
+  tips_and_advice: string;
+  is_anonymous: boolean;
+}
+
 export default function Experiences() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
-  const [experiences, setExperiences] = useState<any[]>([]);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<ExperienceFilters>({
     company: 'all',
     role: 'all',
     experience_type: 'all',
     search: ''
   });
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ExperienceFormData>({
     company: '',
     role: '',
     date: '',
@@ -33,6 +72,25 @@ export default function Experiences() {
     tips_and_advice: '',
     is_anonymous: true
   });
+
+  const fetchExperiences = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("access");
+      const params = new URLSearchParams();
+      
+      if (filters.company !== 'all') params.append('company', filters.company);
+      if (filters.role !== 'all') params.append('role', filters.role);
+      if (filters.experience_type !== 'all') params.append('experience_type', filters.experience_type);
+      if (filters.search) params.append('search', filters.search);
+      
+      const response = await axios.get(`${API_URL}/interviews/experiences/?${params}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setExperiences(response.data);
+    } catch (error) {
+      console.error("Failed to fetch experiences:", error);
+    }
+  }, [filters]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -53,26 +111,7 @@ export default function Experiences() {
     };
 
     checkAuth();
-  }, [router]);
-
-  const fetchExperiences = async () => {
-    try {
-      const token = localStorage.getItem("access");
-      const params = new URLSearchParams();
-      
-      if (filters.company !== 'all') params.append('company', filters.company);
-      if (filters.role !== 'all') params.append('role', filters.role);
-      if (filters.experience_type !== 'all') params.append('experience_type', filters.experience_type);
-      if (filters.search) params.append('search', filters.search);
-      
-      const response = await axios.get(`${API_URL}/interviews/experiences/?${params}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setExperiences(response.data);
-    } catch (error) {
-      console.error("Failed to fetch experiences:", error);
-    }
-  };
+  }, [router, fetchExperiences]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -83,7 +122,7 @@ export default function Experiences() {
     }));
   };
 
-  const handleFilterChange = (newFilters: any) => {
+  const handleFilterChange = (newFilters: ExperienceFilters) => {
     setFilters(newFilters);
   };
 
@@ -117,9 +156,10 @@ export default function Experiences() {
       });
       await fetchExperiences();
       alert(response.data.message);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { error?: string } } };
       console.error("Failed to create experience:", error);
-      alert(error.response?.data?.error || "Failed to create experience. Please try again.");
+      alert(axiosError.response?.data?.error || "Failed to create experience. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -129,7 +169,7 @@ export default function Experiences() {
     if (isAuth) {
       fetchExperiences();
     }
-  }, [filters, isAuth]);
+  }, [filters, isAuth, fetchExperiences]);
 
   if (isLoading) {
     return (

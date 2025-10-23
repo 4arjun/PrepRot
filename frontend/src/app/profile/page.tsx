@@ -4,11 +4,23 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isAuthenticated } from "../../../lib/auth";
 
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  college: string;
+  role: string;
+  leetcode_username: string;
+  leetcode_score: number;
+}
+
 export default function Profile() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {

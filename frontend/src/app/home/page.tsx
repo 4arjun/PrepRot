@@ -7,7 +7,7 @@ import { isAuthenticated, logout } from "../../../lib/auth";
 export default function Home() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuth, setIsAuth] = useState(false);
+  const [isAuth] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {

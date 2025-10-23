@@ -10,7 +10,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,8 +22,8 @@ export default function SignupPage() {
           router.push("/home");
           return;
         }
-      } catch (error) {
-        console.error("Auth check failed:", error);
+      } catch (authError) {
+        console.error("Auth check failed:", authError);
       }
     };
 
@@ -63,7 +63,7 @@ export default function SignupPage() {
         setErrors(result.errors);
         setMessage(result.message);
       }
-    } catch (error) {
+    } catch {
       setMessage("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
